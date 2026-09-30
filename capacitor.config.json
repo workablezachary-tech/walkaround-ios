@@ -1,0 +1,9 @@
+{
+  "appId": "com.walkaround.app",
+  "appName": "Walkaround",
+  "webDir": "www",
+  "server": {
+    "url": "https://effulgent-sunburst-6263b1.netlify.app",
+    "androidScheme": "https"
+  }
+}
