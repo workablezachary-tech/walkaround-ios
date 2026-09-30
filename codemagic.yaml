@@ -6,6 +6,8 @@ workflows:
     integrations:
       app_store_connect: Walkaround
     environment:
+      groups:
+        - code_signing
       vars:
         XCODE_WORKSPACE: ios/App/App.xcworkspace
         XCODE_SCHEME: App
@@ -20,8 +22,22 @@ workflows:
         script: keychain initialize
       - name: Create signing files
         script: |
+          python3 - << 'PY'
+          import json, subprocess
+          raw = subprocess.check_output([
+            "app-store-connect", "certificates", "list",
+            "--type", "IOS_DISTRIBUTION", "--json"
+          ], text=True)
+          data = json.loads(raw)
+          rows = data if isinstance(data, list) else data.get("data") or data.get("certificates") or []
+          for row in rows:
+            cid = row.get("id") if isinstance(row, dict) else None
+            if cid:
+              subprocess.run(["app-store-connect", "certificates", "delete", cid], check=False)
+          PY
           app-store-connect fetch-signing-files "com.walkaround.app" \
             --type IOS_APP_STORE \
+            --certificate-key="@env:CERTIFICATE_PRIVATE_KEY" \
             --create
       - name: Add certificates
         script: keychain add-certificates
